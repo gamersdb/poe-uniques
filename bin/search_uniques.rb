@@ -16,6 +16,8 @@ if query.nil? || query.empty?
   exit 1
 end
 
+normalized_query = query.downcase
+
 unless File.exist?(DATA_PATH)
   warn "Data file not found: #{DATA_PATH}"
   warn 'Run `ruby bin/fetch_uniques.rb` first.'
@@ -28,9 +30,10 @@ csv = CSV.generate do |out|
   out << %w[name effect_text url]
 
   items.each do |item|
-    next unless item.fetch('effect_text', '').include?(query)
+    effect_text = item.fetch('effect_text', '')
+    next unless effect_text.downcase.include?(normalized_query)
 
-    out << [item['name'], item['effect_text'], item['url']]
+    out << [item['name'], effect_text, item['url']]
   end
 end
 

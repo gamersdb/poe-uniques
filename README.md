@@ -83,7 +83,7 @@ ruby bin/search_uniques.rb "Explode" > result.csv
 ## Notes
 
 - データ元は英語ページ `https://poedb.tw/us/Unique_item` 固定です
-- 検索は大文字小文字を区別する単純な部分一致です
+- 検索は大文字小文字を区別しない単純な部分一致です
 - PoEDB の HTML 構造が変わると取得スクリプトの修正が必要になる可能性があります
 
 ## Troubleshooting
