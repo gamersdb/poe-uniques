@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>poe-uniques Search</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f1ea;
+        --panel: #fffdf8;
+        --panel-strong: #f7f0e2;
+        --border: #d8ccb6;
+        --text: #2f2417;
+        --muted: #6d5c48;
+        --accent: #8f3b1b;
+        --accent-strong: #6f2b12;
+        --error: #a12626;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top, rgba(143, 59, 27, 0.12), transparent 35%),
+          linear-gradient(180deg, #fbf7ef 0%, var(--bg) 100%);
+      }
+
+      .page {
+        width: min(1120px, calc(100% - 32px));
+        margin: 32px auto 48px;
+      }
+
+      .hero,
+      .results {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 18px 40px rgba(47, 36, 23, 0.08);
+      }
+
+      .hero {
+        padding: 28px;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.8rem, 2vw + 1.2rem, 3rem);
+      }
+
+      .lead {
+        margin: 0 0 20px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+
+      input[type="search"] {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        font: inherit;
+        color: inherit;
+        background: #fff;
+      }
+
+      input[type="search"]:focus {
+        outline: 2px solid rgba(143, 59, 27, 0.25);
+        border-color: var(--accent);
+      }
+
+      button {
+        align-self: end;
+        padding: 14px 18px;
+        border: 0;
+        border-radius: 12px;
+        font: inherit;
+        font-weight: 700;
+        color: #fff;
+        background: linear-gradient(180deg, var(--accent) 0%, var(--accent-strong) 100%);
+        cursor: pointer;
+      }
+
+      button:hover {
+        filter: brightness(1.03);
+      }
+
+      .help {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .results {
+        overflow: hidden;
+      }
+
+      .results-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel-strong);
+      }
+
+      .status {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .status[data-tone="error"] {
+        color: var(--error);
+      }
+
+      .table-wrap {
+        overflow: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+        text-align: left;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        background: #fcf8ef;
+        font-size: 0.95rem;
+      }
+
+      td.effect-text {
+        white-space: pre-wrap;
+        line-height: 1.5;
+      }
+
+      a {
+        color: var(--accent);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100%, calc(100% - 20px));
+          margin-top: 20px;
+        }
+
+        .hero {
+          padding: 20px;
+        }
+
+        form {
+          grid-template-columns: 1fr;
+        }
+
+        .results-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        th,
+        td {
+          min-width: 160px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <h1>Unique Search</h1>
+        <p class="lead">
+          `effect_text` のみを対象に、大文字小文字を区別しない部分一致で検索します。
+          空白区切りで複数語を入れると OR 検索になります。
+        </p>
+        <form id="search-form">
+          <div>
+            <label for="query">検索クエリ</label>
+            <input
+              id="query"
+              name="query"
+              type="search"
+              placeholder="例: Power Charge"
+              autocomplete="off"
+            />
+          </div>
+          <button type="submit">検索</button>
+        </form>
+        <p class="help">ローカルHTTPサーバー経由で開いてください。`file://` ではJSONを読めない場合があります。</p>
+      </section>
+
+      <section class="results">
+        <div class="results-header">
+          <strong>検索結果</strong>
+          <p id="status" class="status">データを読み込み中です。</p>
+        </div>
+        <div class="table-wrap">
+          <table id="results-table" class="hidden">
+            <thead>
+              <tr>
+                <th scope="col">name</th>
+                <th scope="col">item_type</th>
+                <th scope="col">effect_text</th>
+                <th scope="col">url</th>
+              </tr>
+            </thead>
+            <tbody id="results-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
