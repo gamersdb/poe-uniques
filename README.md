@@ -44,6 +44,7 @@ bundle exec ruby bin/fetch_uniques.rb
 ```
 
 成功すると `data/uniques.json` が生成されます。
+`item_type` を含む最新データに更新したい場合も、このコマンドを再実行してください。
 
 次に、効果本文を部分一致検索します。
 
@@ -65,9 +66,10 @@ bundle exec ruby bin/search_uniques.rb "Explode" > result.csv
 
 ## Output
 
-検索結果の CSV 列は次の 3 つです。
+検索結果の CSV 列は次の 4 つです。
 
 - `name`
+- `item_type`
 - `effect_text`
 - `url`
 
@@ -79,6 +81,7 @@ bundle exec ruby bin/search_uniques.rb "Explode" > result.csv
 
 - `name`
 - `base_type`
+- `item_type`
 - `category`
 - `url`
 - `effects`

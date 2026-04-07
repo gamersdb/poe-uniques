@@ -28,14 +28,14 @@ end
 items = JSON.parse(File.read(DATA_PATH))
 
 csv = CSV.generate do |out|
-  out << %w[name effect_text url]
+  out << %w[name item_type effect_text url]
 
   items.each do |item|
     effect_text = item.fetch('effect_text', '')
     normalized_effect_text = effect_text.downcase
     next unless normalized_queries.any? { |query| normalized_effect_text.include?(query) }
 
-    out << [item['name'], effect_text, item['url']]
+    out << [item['name'], item['item_type'], effect_text, item['url']]
   end
 end
 
