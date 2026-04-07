@@ -8,15 +8,16 @@ DATA_PATH = File.expand_path('../data/uniques.json', __dir__)
 
 def usage
   warn 'Usage: ruby bin/search_uniques.rb "search text"'
+  warn '   or: ruby bin/search_uniques.rb word1 word2 word3'
 end
 
-query = ARGV[0]
-if query.nil? || query.empty?
+queries = ARGV.map(&:strip).reject(&:empty?)
+if queries.empty?
   usage
   exit 1
 end
 
-normalized_query = query.downcase
+normalized_queries = queries.map(&:downcase)
 
 unless File.exist?(DATA_PATH)
   warn "Data file not found: #{DATA_PATH}"
@@ -31,7 +32,8 @@ csv = CSV.generate do |out|
 
   items.each do |item|
     effect_text = item.fetch('effect_text', '')
-    next unless effect_text.downcase.include?(normalized_query)
+    normalized_effect_text = effect_text.downcase
+    next unless normalized_queries.any? { |query| normalized_effect_text.include?(query) }
 
     out << [item['name'], effect_text, item['url']]
   end

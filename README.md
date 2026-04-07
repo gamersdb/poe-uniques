@@ -51,6 +51,12 @@ ruby bin/fetch_uniques.rb
 ruby bin/search_uniques.rb "Power Charge"
 ```
 
+複数引数を渡した場合は OR 検索になります。
+
+```sh
+ruby bin/search_uniques.rb allies minion
+```
+
 CSV をファイルに保存する場合はリダイレクトします。
 
 ```sh
@@ -84,6 +90,7 @@ ruby bin/search_uniques.rb "Explode" > result.csv
 
 - データ元は英語ページ `https://poedb.tw/us/Unique_item` 固定です
 - 検索は大文字小文字を区別しない単純な部分一致です
+- 複数引数を渡した場合は OR 条件で検索します
 - PoEDB の HTML 構造が変わると取得スクリプトの修正が必要になる可能性があります
 
 ## Troubleshooting
