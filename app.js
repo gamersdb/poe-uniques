@@ -30,6 +30,67 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+function findHighlightRanges(text, queries) {
+  const normalizedText = text.toLowerCase();
+  const ranges = [];
+
+  queries.forEach((query) => {
+    let startIndex = 0;
+
+    while (startIndex < normalizedText.length) {
+      const matchIndex = normalizedText.indexOf(query, startIndex);
+      if (matchIndex === -1) {
+        break;
+      }
+
+      ranges.push([matchIndex, matchIndex + query.length]);
+      startIndex = matchIndex + query.length;
+    }
+  });
+
+  ranges.sort((left, right) => left[0] - right[0] || left[1] - right[1]);
+
+  return ranges.reduce((merged, currentRange) => {
+    const lastRange = merged.at(-1);
+    if (!lastRange || currentRange[0] > lastRange[1]) {
+      merged.push([...currentRange]);
+      return merged;
+    }
+
+    lastRange[1] = Math.max(lastRange[1], currentRange[1]);
+    return merged;
+  }, []);
+}
+
+function highlightText(text, queries) {
+  if (queries.length === 0) {
+    return escapeHtml(text);
+  }
+
+  const ranges = findHighlightRanges(text, queries);
+  if (ranges.length === 0) {
+    return escapeHtml(text);
+  }
+
+  const parts = [];
+  let cursor = 0;
+
+  ranges.forEach(([start, end]) => {
+    if (cursor < start) {
+      parts.push(escapeHtml(text.slice(cursor, start)));
+    }
+
+    parts.push(`<mark>${escapeHtml(text.slice(start, end))}</mark>`);
+    cursor = end;
+  });
+
+  if (cursor < text.length) {
+    parts.push(escapeHtml(text.slice(cursor)));
+  }
+
+  return parts.join('');
+}
+
 function tokenizeQuery(value) {
   return value
     .trim()
@@ -47,7 +108,7 @@ function searchItems(queries) {
   });
 }
 
-function renderRows(results) {
+function renderRows(results, queries = []) {
   if (results.length === 0) {
     resultsBody.innerHTML = '';
     resultsTable.classList.add('hidden');
@@ -58,7 +119,7 @@ function renderRows(results) {
     .map((item) => {
       const name = escapeHtml(item.name);
       const itemType = escapeHtml(item.item_type ?? '');
-      const effectText = escapeHtml(item.effect_text ?? '');
+      const effectText = highlightText(String(item.effect_text ?? ''), queries);
       const url = escapeHtml(item.url ?? '');
 
       return `
@@ -110,7 +171,7 @@ function handleSubmit(event) {
   }
 
   const results = searchItems(queries);
-  renderRows(results);
+  renderRows(results, queries);
 
   if (results.length === 0) {
     setStatus(`"${rawQuery}" の検索結果は 0 件でした。`);
